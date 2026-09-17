@@ -223,51 +223,125 @@
     }
 
 
-    // Update claim status
-    function updateClaim(id, status) {
+ // Update claim status
+function updateClaim(id, status) {
 
-        const message =
-            status === "Approved"
-                ? "Approve this claim?"
-                : "Reject this claim?";
+    const message =
+        status === "Approved"
+            ? "Approve this claim?"
+            : "Reject this claim?";
+
+    if (!confirm(message)) {
+        return;
+    }
+
+    let claims =
+        JSON.parse(localStorage.getItem("claims")) || [];
+
+    let lostItems =
+        JSON.parse(localStorage.getItem("lostItems")) || [];
 
 
-        if (!confirm(message)) {
-            return;
+    // Find the selected claim
+    const selectedClaim =
+        claims.find(claim => claim.id === id);
+
+
+    if (!selectedClaim) {
+
+        alert("Claim not found!");
+
+        return;
+    }
+
+
+    // Update claim
+    claims = claims.map(claim => {
+
+        if (claim.id === id) {
+
+            return {
+                ...claim,
+                status: status,
+                approvedDate:
+                    status === "Approved"
+                        ? new Date().toISOString()
+                        : claim.approvedDate || null
+            };
+
         }
 
+        return claim;
 
-        let claims =
-            JSON.parse(localStorage.getItem("claims")) || [];
+    });
 
 
-        claims = claims.map(claim => {
+    // If claim is approved
+    if (status === "Approved") {
 
-            if (claim.id === id) {
+        lostItems = lostItems.map(item => {
+
+            if (item.id === selectedClaim.itemId) {
 
                 return {
-                    ...claim,
-                    status: status
+                    ...item,
+
+                    // Item has been found
+                    status: "Found",
+
+                    // Store finder/claim information
+                    foundBy: selectedClaim.claimedBy,
+                    foundByName:
+                        selectedClaim.claimedByName ||
+                        selectedClaim.claimedBy,
+
+                    claimStatus: "Approved",
+
+                    foundDate:
+                        new Date().toISOString()
                 };
 
             }
 
-            return claim;
+            return item;
 
         });
 
 
+        // Save updated lost items
         localStorage.setItem(
-            "claims",
-            JSON.stringify(claims)
+            "lostItems",
+            JSON.stringify(lostItems)
         );
 
+    }
 
-        loadClaims();
 
-        alert("Claim status updated successfully!");
+    // Save updated claims
+    localStorage.setItem(
+        "claims",
+        JSON.stringify(claims)
+    );
+
+
+    loadClaims();
+
+
+    if (status === "Approved") {
+
+        alert(
+            "Claim approved! The item is now marked as Found."
+        );
+
+    } else {
+
+        alert(
+            "Claim rejected successfully!"
+        );
 
     }
+
+}
 
 
     // Status badge

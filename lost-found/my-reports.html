@@ -222,11 +222,75 @@
             }
 
 
+            // ==========================================
+            // STATUS
+            // ==========================================
+
             const statusClass =
                 item.status === "Found"
                 ? "success"
                 : "warning";
 
+
+            // ==========================================
+            // FOUND MESSAGE
+            // ==========================================
+
+            let foundMessage = "";
+
+            if (
+                item.status === "Found" &&
+                item.claimStatus === "Approved"
+            ) {
+
+                foundMessage = `
+
+                    <div class="alert alert-success mt-2 mb-0 py-2">
+
+                        <strong>
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Your item has been found!
+
+                        </strong>
+
+                        <br>
+
+                        <small>
+
+                            Found by:
+
+                            <strong>
+                                ${escapeHTML(
+                                    item.foundByName ||
+                                    item.foundBy ||
+                                    "Unknown"
+                                )}
+                            </strong>
+
+                        </small>
+
+                        <br>
+
+                        <small>
+
+                            Approved on:
+
+                            ${formatDate(item.foundDate)}
+
+                        </small>
+
+                    </div>
+
+                `;
+
+            }
+
+
+            // ==========================================
+            // DISPLAY ROW
+            // ==========================================
 
             reportsTable.innerHTML += `
 
@@ -236,31 +300,43 @@
                         ${imageHTML}
                     </td>
 
+
                     <td>
+
                         <strong>
                             ${escapeHTML(item.itemName)}
                         </strong>
+
+                        ${foundMessage}
+
                     </td>
+
 
                     <td>
                         ${escapeHTML(item.category)}
                     </td>
 
+
                     <td>
                         ${escapeHTML(item.location)}
                     </td>
+
 
                     <td>
                         ${formatDate(item.lostDate)}
                     </td>
 
+
                     <td>
 
                         <span class="badge text-bg-${statusClass}">
+
                             ${escapeHTML(item.status)}
+
                         </span>
 
                     </td>
+
 
                     <td>
 
@@ -329,7 +405,14 @@
 
             const d = new Date(date);
 
-            return d.toLocaleDateString("en-IN");
+            return d.toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
 
         }
 
@@ -350,6 +433,9 @@
         }
 
     </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
