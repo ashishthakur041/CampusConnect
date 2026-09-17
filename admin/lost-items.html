@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Lost Items - CampusConnect</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold" href="dashboard.html">
+            🎓 CampusConnect
+        </a>
+
+        <button class="btn btn-light btn-sm" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
+
+    </div>
+</nav>
+
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold">
+                <i class="fa-solid fa-box-open text-primary"></i>
+                Manage Lost Items
+            </h2>
+
+            <p class="text-muted mb-0">
+                View all items reported by users.
+            </p>
+        </div>
+
+        <a href="dashboard.html" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left"></i>
+            Dashboard
+        </a>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>#</th>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Reported By</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="itemTable"></tbody>
+
+                </table>
+
+            </div>
+
+
+            <div id="noItems"
+                 class="text-center text-muted py-4 d-none">
+
+                <i class="fa-solid fa-box-open fa-2x mb-2"></i>
+
+                <p class="mb-0">
+                    No lost items reported yet.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // Check admin login
+    const currentUser =
+        JSON.parse(localStorage.getItem("campusCurrentUser"));
+
+    if (!currentUser || currentUser.role !== "admin") {
+        window.location.href = "../login.html";
+    }
+
+
+    // Load lost items
+    function loadItems() {
+
+        const items =
+            JSON.parse(localStorage.getItem("lostItems")) || [];
+
+        const table =
+            document.getElementById("itemTable");
+
+        const noItems =
+            document.getElementById("noItems");
+
+
+        if (items.length === 0) {
+
+            table.innerHTML = "";
+
+            noItems.classList.remove("d-none");
+
+            return;
+        }
+
+
+        noItems.classList.add("d-none");
+
+
+        items.sort(
+            (a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+
+        table.innerHTML = items.map((item, index) => `
+
+            <tr>
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    <strong>
+                        ${escapeHTML(item.itemName)}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escapeHTML(item.category)}
+                </td>
+
+                <td>
+                    ${escapeHTML(item.location)}
+                </td>
+
+                <td>
+                    ${formatDate(item.lostDate)}
+                </td>
+
+                <td>
+
+                    <span class="badge ${
+                        item.status === "Found"
+                            ? "bg-success"
+                            : "bg-warning text-dark"
+                    }">
+
+                        ${escapeHTML(item.status)}
+
+                    </span>
+
+                </td>
+
+                <td>
+                    ${escapeHTML(item.reportedByName || item.reportedBy)}
+                </td>
+
+            </tr>
+
+        `).join("");
+    }
+
+
+    // Escape HTML
+    function escapeHTML(text) {
+
+        const div = document.createElement("div");
+
+        div.textContent = text || "";
+
+        return div.innerHTML;
+    }
+
+
+    // Format date
+    function formatDate(date) {
+
+        if (!date) {
+            return "N/A";
+        }
+
+        return new Date(date).toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+    }
+
+
+    // Logout
+    function logout() {
+
+        localStorage.removeItem("campusCurrentUser");
+
+        window.location.href = "../login.html";
+    }
+
+
+    loadItems();
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

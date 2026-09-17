@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Notices - CampusConnect</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold" href="dashboard.html">
+            🎓 CampusConnect
+        </a>
+
+        <button class="btn btn-light btn-sm" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
+
+    </div>
+</nav>
+
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold">
+                <i class="fa-solid fa-bullhorn text-primary"></i>
+                Manage Notices
+            </h2>
+
+            <p class="text-muted mb-0">
+                Add and manage campus announcements.
+            </p>
+        </div>
+
+        <a href="dashboard.html" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left"></i>
+            Dashboard
+        </a>
+
+    </div>
+
+
+    <!-- Add Notice -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-4">
+                <i class="fa-solid fa-plus"></i>
+                Add New Notice
+            </h5>
+
+            <form id="noticeForm">
+
+                <div class="row g-3">
+
+                    <div class="col-md-8">
+
+                        <label class="form-label">
+                            Notice Title
+                        </label>
+
+                        <input
+                            type="text"
+                            id="title"
+                            class="form-control"
+                            placeholder="Enter notice title"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Notice Type
+                        </label>
+
+                        <select id="type"
+                                class="form-select"
+                                required>
+
+                            <option value="">Select Type</option>
+                            <option value="General">General</option>
+                            <option value="Important">Important</option>
+                            <option value="Event">Event</option>
+                            <option value="Exam">Exam</option>
+                            <option value="Library">Library</option>
+                            <option value="Other">Other</option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Notice Message
+                        </label>
+
+                        <textarea
+                            id="message"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Enter notice details"
+                            required></textarea>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="fa-solid fa-plus"></i>
+                            Add Notice
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Existing Notices -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-4">
+                All Notices
+            </h5>
+
+            <div id="noticeContainer"></div>
+
+
+            <div id="noNotices"
+                 class="text-center text-muted py-4 d-none">
+
+                <i class="fa-solid fa-bullhorn fa-2x mb-2"></i>
+
+                <p class="mb-0">
+                    No notices available.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // Check admin login
+    const currentUser =
+        JSON.parse(localStorage.getItem("campusCurrentUser"));
+
+    if (!currentUser || currentUser.role !== "admin") {
+
+        window.location.href = "../login.html";
+
+    }
+
+
+    // Load notices
+    function loadNotices() {
+
+        const notices =
+            JSON.parse(localStorage.getItem("campusNotices")) || [];
+
+        const container =
+            document.getElementById("noticeContainer");
+
+        const noNotices =
+            document.getElementById("noNotices");
+
+
+        if (notices.length === 0) {
+
+            container.innerHTML = "";
+
+            noNotices.classList.remove("d-none");
+
+            return;
+        }
+
+
+        noNotices.classList.add("d-none");
+
+
+        notices.sort(
+            (a, b) =>
+                new Date(b.date) - new Date(a.date)
+        );
+
+
+        container.innerHTML = notices.map(notice => `
+
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between
+                            align-items-start">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+
+                            <i class="fa-solid fa-bell text-primary"></i>
+
+                            ${escapeHTML(notice.title)}
+
+                        </h5>
+
+                        <small class="text-muted">
+                            ${formatDate(notice.date)}
+                        </small>
+
+                        <p class="mt-2 mb-0">
+                            ${escapeHTML(notice.message)}
+                        </p>
+
+                    </div>
+
+
+                    <div class="text-end">
+
+                        <span class="badge bg-primary mb-2">
+                            ${escapeHTML(notice.type)}
+                        </span>
+
+                        <br>
+
+                        <button
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="deleteNotice(${notice.id})">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `).join("");
+    }
+
+
+    // Add notice
+    document
+        .getElementById("noticeForm")
+        .addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+
+            const title =
+                document.getElementById("title").value.trim();
+
+            const type =
+                document.getElementById("type").value;
+
+            const message =
+                document.getElementById("message").value.trim();
+
+
+            const notices =
+                JSON.parse(localStorage.getItem("campusNotices")) || [];
+
+
+            const newNotice = {
+
+                id: Date.now(),
+
+                title: title,
+
+                message: message,
+
+                date: new Date().toISOString(),
+
+                type: type
+
+            };
+
+
+            notices.push(newNotice);
+
+
+            localStorage.setItem(
+                "campusNotices",
+                JSON.stringify(notices)
+            );
+
+
+            document
+                .getElementById("noticeForm")
+                .reset();
+
+
+            loadNotices();
+
+
+            alert("Notice added successfully!");
+
+        });
+
+
+    // Delete notice
+    function deleteNotice(id) {
+
+        if (!confirm("Are you sure you want to delete this notice?")) {
+            return;
+        }
+
+
+        let notices =
+            JSON.parse(localStorage.getItem("campusNotices")) || [];
+
+
+        notices =
+            notices.filter(notice => notice.id !== id);
+
+
+        localStorage.setItem(
+            "campusNotices",
+            JSON.stringify(notices)
+        );
+
+
+        loadNotices();
+
+    }
+
+
+    // Escape HTML
+    function escapeHTML(text) {
+
+        const div = document.createElement("div");
+
+        div.textContent = text || "";
+
+        return div.innerHTML;
+    }
+
+
+    // Format date
+    function formatDate(date) {
+
+        if (!date) {
+            return "N/A";
+        }
+
+        return new Date(date).toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+    }
+
+
+    // Logout
+    function logout() {
+
+        localStorage.removeItem("campusCurrentUser");
+
+        window.location.href = "../login.html";
+    }
+
+
+    loadNotices();
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

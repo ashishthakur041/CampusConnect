@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - CampusConnect</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+
+            <a class="navbar-brand fw-bold" href="index.html">
+                🎓 CampusConnect
+            </a>
+
+            <a href="register.html" class="btn btn-light">
+                Register
+            </a>
+
+        </div>
+    </nav>
+
+
+    <!-- Login Section -->
+    <div class="container py-5">
+
+        <div class="row justify-content-center">
+
+            <div class="col-md-6 col-lg-5">
+
+                <div class="card border-0 shadow p-4">
+
+                    <div class="text-center mb-4">
+
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                        </div>
+
+                        <h2 class="fw-bold">
+                            Welcome Back
+                        </h2>
+
+                        <p class="text-muted">
+                            Login to your CampusConnect account
+                        </p>
+
+                    </div>
+
+
+                    <form id="loginForm">
+
+                        <!-- Email -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                class="form-control"
+                                placeholder="Enter your email"
+                                required>
+
+                        </div>
+
+
+                        <!-- Password -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="password"
+                                class="form-control"
+                                placeholder="Enter your password"
+                                required>
+
+                        </div>
+
+
+                        <!-- Message -->
+                        <div id="message"></div>
+
+
+                        <!-- Login Button -->
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100 py-2">
+
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            Login
+
+                        </button>
+
+                    </form>
+
+
+                    <div class="text-center mt-4">
+
+                        <span class="text-muted">
+                            Don't have an account?
+                        </span>
+
+                        <a href="register.html"
+                           class="text-primary fw-semibold text-decoration-none">
+
+                            Register
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        document
+            .getElementById("loginForm")
+            .addEventListener("submit", function(event) {
+
+                event.preventDefault();
+
+                const email =
+                    document.getElementById("email").value.trim();
+
+                const password =
+                    document.getElementById("password").value;
+
+                const message =
+                    document.getElementById("message");
+
+
+                // ==========================================
+                // ADMIN LOGIN
+                // ==========================================
+
+                if (
+                    email.toLowerCase() === "admin@campus.com" &&
+                    password === "admin123"
+                ) {
+
+                    const admin = {
+
+                        name: "Admin",
+
+                        email: "admin@campus.com",
+
+                        role: "admin"
+
+                    };
+
+                    localStorage.setItem(
+                        "campusCurrentUser",
+                        JSON.stringify(admin)
+                    );
+
+
+                    message.innerHTML = `
+                        <div class="alert alert-success">
+                            Admin login successful!
+                        </div>
+                    `;
+
+
+                    setTimeout(function() {
+
+                        window.location.href =
+                            "admin/dashboard.html";
+
+                    }, 800);
+
+                    return;
+                }
+
+
+                // ==========================================
+                // USER LOGIN
+                // ==========================================
+
+                const users =
+                    JSON.parse(
+                        localStorage.getItem("campusUsers")
+                    ) || [];
+
+
+                const user =
+                    users.find(function(user) {
+
+                        return (
+                            user.email.toLowerCase() ===
+                            email.toLowerCase()
+                            &&
+                            user.password === password
+                        );
+
+                    });
+
+
+                if (!user) {
+
+                    message.innerHTML = `
+                        <div class="alert alert-danger">
+                            Invalid email or password!
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                // Current logged-in user
+                const currentUser = {
+
+                    id: user.id,
+
+                    name: user.name,
+
+                    email: user.email,
+
+                    role: "user"
+
+                };
+
+
+                localStorage.setItem(
+                    "campusCurrentUser",
+                    JSON.stringify(currentUser)
+                );
+
+
+                message.innerHTML = `
+                    <div class="alert alert-success">
+                        Login successful!
+                        Redirecting...
+                    </div>
+                `;
+
+
+                setTimeout(function() {
+
+                    window.location.href =
+                        "user/dashboard.html";
+
+                }, 800);
+
+            });
+
+    </script>
+
+</body>
+
+</html>

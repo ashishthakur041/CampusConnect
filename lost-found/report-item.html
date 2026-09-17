@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Report Lost Item - CampusConnect</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+
+            <a class="navbar-brand fw-bold" href="../user/dashboard.html">
+                🎓 CampusConnect
+            </a>
+
+            <a href="../user/dashboard.html"
+               class="btn btn-light btn-sm">
+
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+
+            </a>
+
+        </div>
+    </nav>
+
+
+    <!-- Main -->
+    <div class="container py-5">
+
+        <div class="row justify-content-center">
+
+            <div class="col-md-8 col-lg-7">
+
+                <div class="card border-0 shadow p-4">
+
+                    <div class="text-center mb-4">
+
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+
+                        <h2 class="fw-bold">
+                            Report Lost Item
+                        </h2>
+
+                        <p class="text-muted">
+                            Enter the details of your lost item.
+                        </p>
+
+                    </div>
+
+
+                    <form id="reportForm">
+
+                        <!-- Item Name -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Item Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="itemName"
+                                class="form-control"
+                                placeholder="Example: Black Wallet"
+                                required>
+
+                        </div>
+
+
+                        <!-- Category -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Category
+                            </label>
+
+                            <select id="category"
+                                    class="form-select"
+                                    required>
+
+                                <option value="">
+                                    Select Category
+                                </option>
+
+                                <option value="Electronics">
+                                    Electronics
+                                </option>
+
+                                <option value="Documents">
+                                    Documents
+                                </option>
+
+                                <option value="Books">
+                                    Books
+                                </option>
+
+                                <option value="Clothing">
+                                    Clothing
+                                </option>
+
+                                <option value="Accessories">
+                                    Accessories
+                                </option>
+
+                                <option value="Stationery">
+                                    Stationery
+                                </option>
+
+                                <option value="Other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Location -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Lost Location
+                            </label>
+
+                            <input
+                                type="text"
+                                id="location"
+                                class="form-control"
+                                placeholder="Example: Library, Ground Floor"
+                                required>
+
+                        </div>
+
+
+                        <!-- Date -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Lost Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="lostDate"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+
+                        <!-- Description -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Description
+                            </label>
+
+                            <textarea
+                                id="description"
+                                class="form-control"
+                                rows="4"
+                                placeholder="Describe the item, colour, brand, identifying marks, etc."
+                                required></textarea>
+
+                        </div>
+
+
+                        <!-- Image -->
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Item Image
+                                <span class="text-muted">
+                                    (Optional)
+                                </span>
+                            </label>
+
+                            <input
+                                type="file"
+                                id="image"
+                                class="form-control"
+                                accept="image/*">
+
+                            <small class="text-muted">
+                                You can upload an image of the lost item.
+                            </small>
+
+                        </div>
+
+
+                        <!-- Message -->
+                        <div id="message"></div>
+
+
+                        <!-- Submit -->
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100 py-2">
+
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Submit Lost Item Report
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ==========================================
+        // CHECK LOGIN
+        // ==========================================
+
+        const currentUser =
+            JSON.parse(
+                localStorage.getItem("campusCurrentUser")
+            );
+
+
+        if (!currentUser || currentUser.role !== "user") {
+
+            window.location.href = "../login.html";
+
+        }
+
+
+        // ==========================================
+        // FORM SUBMIT
+        // ==========================================
+
+        document
+            .getElementById("reportForm")
+            .addEventListener("submit", function(event) {
+
+                event.preventDefault();
+
+
+                const itemName =
+                    document.getElementById("itemName").value.trim();
+
+                const category =
+                    document.getElementById("category").value;
+
+                const location =
+                    document.getElementById("location").value.trim();
+
+                const lostDate =
+                    document.getElementById("lostDate").value;
+
+                const description =
+                    document.getElementById("description").value.trim();
+
+                const imageFile =
+                    document.getElementById("image").files[0];
+
+                const message =
+                    document.getElementById("message");
+
+
+                // ==========================================
+                // GET EXISTING ITEMS
+                // ==========================================
+
+                let lostItems =
+                    JSON.parse(
+                        localStorage.getItem("lostItems")
+                    ) || [];
+
+
+                // ==========================================
+                // CREATE ITEM
+                // ==========================================
+
+                const newItem = {
+
+                    id: Date.now(),
+
+                    itemName: itemName,
+
+                    category: category,
+
+                    location: location,
+
+                    lostDate: lostDate,
+
+                    description: description,
+
+                    status: "Lost",
+
+                    reportedBy: currentUser.email,
+
+                    reportedByName: currentUser.name,
+
+                    image: "",
+
+                    createdAt: new Date().toISOString()
+
+                };
+
+
+                // ==========================================
+                // IMAGE
+                // ==========================================
+
+                if (imageFile) {
+
+                    const reader =
+                        new FileReader();
+
+
+                    reader.onload = function(e) {
+
+                        newItem.image = e.target.result;
+
+                        lostItems.push(newItem);
+
+                        localStorage.setItem(
+                            "lostItems",
+                            JSON.stringify(lostItems)
+                        );
+
+                        showSuccess();
+
+                    };
+
+
+                    reader.readAsDataURL(imageFile);
+
+                } else {
+
+                    lostItems.push(newItem);
+
+                    localStorage.setItem(
+                        "lostItems",
+                        JSON.stringify(lostItems)
+                    );
+
+                    showSuccess();
+
+                }
+
+
+                // ==========================================
+                // SUCCESS
+                // ==========================================
+
+                function showSuccess() {
+
+                    message.innerHTML = `
+
+                        <div class="alert alert-success">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Lost item reported successfully!
+
+                        </div>
+
+                    `;
+
+
+                    document
+                        .getElementById("reportForm")
+                        .reset();
+
+
+                    setTimeout(function() {
+
+                        window.location.href =
+                            "my-reports.html";
+
+                    }, 1200);
+
+                }
+
+            });
+
+    </script>
+
+</body>
+
+</html>
