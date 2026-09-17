@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Locations - CampusConnect</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold" href="dashboard.html">
+            🎓 CampusConnect
+        </a>
+
+        <button class="btn btn-light btn-sm" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
+
+    </div>
+</nav>
+
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold">
+                <i class="fa-solid fa-map-location-dot text-primary"></i>
+                Manage Campus Locations
+            </h2>
+
+            <p class="text-muted mb-0">
+                Add and manage important campus locations.
+            </p>
+        </div>
+
+        <a href="dashboard.html" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left"></i>
+            Dashboard
+        </a>
+
+    </div>
+
+
+    <!-- Add Location -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-4">
+                <i class="fa-solid fa-plus"></i>
+                Add New Location
+            </h5>
+
+            <form id="locationForm">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Building Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="buildingName"
+                            class="form-control"
+                            placeholder="e.g. Main Building"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Room Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="roomNumber"
+                            class="form-control"
+                            placeholder="e.g. 101"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Floor
+                        </label>
+
+                        <input
+                            type="text"
+                            id="floor"
+                            class="form-control"
+                            placeholder="e.g. First Floor"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Department
+                        </label>
+
+                        <input
+                            type="text"
+                            id="department"
+                            class="form-control"
+                            placeholder="e.g. Computer Department"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Description
+                        </label>
+
+                        <textarea
+                            id="description"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter location details"
+                            required></textarea>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <button type="submit" class="btn btn-primary">
+
+                            <i class="fa-solid fa-plus"></i>
+                            Add Location
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Locations -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-4">
+                All Campus Locations
+            </h5>
+
+            <div id="locationContainer"></div>
+
+            <div id="noLocations"
+                 class="text-center text-muted py-4 d-none">
+
+                <i class="fa-solid fa-location-dot fa-2x mb-2"></i>
+
+                <p class="mb-0">
+                    No locations available.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // Check admin login
+    const currentUser =
+        JSON.parse(localStorage.getItem("campusCurrentUser"));
+
+    if (!currentUser || currentUser.role !== "admin") {
+
+        window.location.href = "../login.html";
+
+    }
+
+
+    // Load locations
+    function loadLocations() {
+
+        const locations =
+            JSON.parse(localStorage.getItem("campusLocations")) || [];
+
+        const container =
+            document.getElementById("locationContainer");
+
+        const noLocations =
+            document.getElementById("noLocations");
+
+
+        if (locations.length === 0) {
+
+            container.innerHTML = "";
+
+            noLocations.classList.remove("d-none");
+
+            return;
+        }
+
+
+        noLocations.classList.add("d-none");
+
+
+        container.innerHTML = locations.map(location => `
+
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex justify-content-between
+                            align-items-start">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-2">
+
+                            <i class="fa-solid fa-building text-primary"></i>
+
+                            ${escapeHTML(location.buildingName)}
+
+                        </h5>
+
+                        <p class="mb-1">
+                            <strong>Room:</strong>
+                            ${escapeHTML(location.roomNumber)}
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>Floor:</strong>
+                            ${escapeHTML(location.floor)}
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>Department:</strong>
+                            ${escapeHTML(location.department)}
+                        </p>
+
+                        <p class="text-muted mb-0">
+                            ${escapeHTML(location.description)}
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="deleteLocation(${location.id})">
+
+                        <i class="fa-solid fa-trash"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("");
+    }
+
+
+    // Add location
+    document
+        .getElementById("locationForm")
+        .addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+
+            const buildingName =
+                document.getElementById("buildingName").value.trim();
+
+            const roomNumber =
+                document.getElementById("roomNumber").value.trim();
+
+            const floor =
+                document.getElementById("floor").value.trim();
+
+            const department =
+                document.getElementById("department").value.trim();
+
+            const description =
+                document.getElementById("description").value.trim();
+
+
+            const locations =
+                JSON.parse(localStorage.getItem("campusLocations")) || [];
+
+
+            const newLocation = {
+
+                id: Date.now(),
+
+                buildingName,
+
+                roomNumber,
+
+                floor,
+
+                department,
+
+                description
+
+            };
+
+
+            locations.push(newLocation);
+
+
+            localStorage.setItem(
+                "campusLocations",
+                JSON.stringify(locations)
+            );
+
+
+            document.getElementById("locationForm").reset();
+
+
+            loadLocations();
+
+
+            alert("Location added successfully!");
+
+        });
+
+
+    // Delete location
+    function deleteLocation(id) {
+
+        if (!confirm("Are you sure you want to delete this location?")) {
+            return;
+        }
+
+
+        let locations =
+            JSON.parse(localStorage.getItem("campusLocations")) || [];
+
+
+        locations =
+            locations.filter(location => location.id !== id);
+
+
+        localStorage.setItem(
+            "campusLocations",
+            JSON.stringify(locations)
+        );
+
+
+        loadLocations();
+
+    }
+
+
+    // Escape HTML
+    function escapeHTML(text) {
+
+        const div = document.createElement("div");
+
+        div.textContent = text || "";
+
+        return div.innerHTML;
+    }
+
+
+    // Logout
+    function logout() {
+
+        localStorage.removeItem("campusCurrentUser");
+
+        window.location.href = "../login.html";
+    }
+
+
+    loadLocations();
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

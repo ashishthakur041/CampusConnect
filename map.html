@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Campus Map - CampusConnect</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+
+            <a class="navbar-brand fw-bold"
+               href="../user/dashboard.html">
+                🎓 CampusConnect
+            </a>
+
+            <a href="../user/dashboard.html"
+               class="btn btn-light btn-sm">
+
+                <i class="fa-solid fa-house"></i>
+                Dashboard
+
+            </a>
+
+        </div>
+    </nav>
+
+
+    <!-- Main -->
+    <div class="container py-5">
+
+        <div class="text-center mb-4">
+
+            <h2 class="fw-bold">
+                <i class="fa-solid fa-map-location-dot text-primary"></i>
+                Campus Navigator
+            </h2>
+
+            <p class="text-muted">
+                Find important buildings, classrooms and departments.
+            </p>
+
+        </div>
+
+
+        <!-- Search -->
+        <div class="card border-0 shadow-sm p-4 mb-4">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-10">
+
+                    <label class="form-label fw-semibold">
+                        Search Location
+                    </label>
+
+                    <input
+                        type="text"
+                        id="searchLocation"
+                        class="form-control"
+                        placeholder="Search building, room or department...">
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button
+                        class="btn btn-primary w-100"
+                        onclick="displayLocations()">
+
+                        <i class="fa-solid fa-search"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Locations -->
+        <div class="row g-4" id="locationsContainer">
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ==========================================
+        // CHECK LOGIN
+        // ==========================================
+
+        const currentUser =
+            JSON.parse(
+                localStorage.getItem("campusCurrentUser")
+            );
+
+
+        if (!currentUser || currentUser.role !== "user") {
+
+            window.location.href = "../login.html";
+
+        }
+
+
+        // ==========================================
+        // DEFAULT LOCATIONS
+        // ==========================================
+
+        const defaultLocations = [
+
+            {
+                id: 1,
+                buildingName: "Main Building",
+                roomNumber: "101",
+                floor: "Ground Floor",
+                department: "Computer Department",
+                description:
+                    "Main academic building with computer labs and classrooms."
+            },
+
+            {
+                id: 2,
+                buildingName: "Library",
+                roomNumber: "LIB-01",
+                floor: "Ground Floor",
+                department: "Central Library",
+                description:
+                    "Central library with books, study areas and reference sections."
+            },
+
+            {
+                id: 3,
+                buildingName: "Science Building",
+                roomNumber: "LAB-01",
+                floor: "First Floor",
+                department: "Science Department",
+                description:
+                    "Science laboratories and practical classrooms."
+            },
+
+            {
+                id: 4,
+                buildingName: "Administrative Block",
+                roomNumber: "ADM-01",
+                floor: "Ground Floor",
+                department: "Administration Office",
+                description:
+                    "Principal office, administration and student services."
+            },
+
+            {
+                id: 5,
+                buildingName: "Canteen",
+                roomNumber: "CAN-01",
+                floor: "Ground Floor",
+                department: "Student Canteen",
+                description:
+                    "Campus food and refreshment area."
+            }
+
+        ];
+
+
+        // ==========================================
+        // LOAD LOCATIONS
+        // ==========================================
+
+        let savedLocations =
+            JSON.parse(
+                localStorage.getItem("campusLocations")
+            );
+
+
+        if (!savedLocations || savedLocations.length === 0) {
+
+            savedLocations = defaultLocations;
+
+            localStorage.setItem(
+                "campusLocations",
+                JSON.stringify(savedLocations)
+            );
+
+        }
+
+
+        // ==========================================
+        // DISPLAY LOCATIONS
+        // ==========================================
+
+        function displayLocations() {
+
+            const search =
+                document
+                .getElementById("searchLocation")
+                .value
+                .trim()
+                .toLowerCase();
+
+
+            const container =
+                document.getElementById("locationsContainer");
+
+
+            const filteredLocations =
+                savedLocations.filter(function(location) {
+
+                    return (
+
+                        location.buildingName
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        location.roomNumber
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        location.floor
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        location.department
+                            .toLowerCase()
+                            .includes(search)
+
+                    );
+
+                });
+
+
+            container.innerHTML = "";
+
+
+            // No result
+            if (filteredLocations.length === 0) {
+
+                container.innerHTML = `
+
+                    <div class="col-12">
+
+                        <div class="card border-0 shadow-sm
+                                    text-center p-5">
+
+                            <i class="fa-solid fa-location-dot
+                                      fa-3x text-muted mb-3"></i>
+
+                            <h5>
+                                No location found
+                            </h5>
+
+                            <p class="text-muted">
+                                Try another building, room or department.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            // Display cards
+            filteredLocations.forEach(function(location) {
+
+                container.innerHTML += `
+
+                    <div class="col-md-6 col-lg-4">
+
+                        <div class="card border-0 shadow-sm
+                                    h-100">
+
+                            <div class="card-body p-4">
+
+                                <div class="feature-icon mb-3"
+                                     style="margin-left:0;">
+
+                                    <i class="fa-solid
+                                              fa-building"></i>
+
+                                </div>
+
+
+                                <h5 class="fw-bold">
+
+                                    ${escapeHTML(
+                                        location.buildingName
+                                    )}
+
+                                </h5>
+
+
+                                <p class="mb-2">
+
+                                    <i class="fa-solid
+                                              fa-door-open
+                                              text-primary"></i>
+
+                                    Room:
+                                    <strong>
+                                        ${escapeHTML(
+                                            location.roomNumber
+                                        )}
+                                    </strong>
+
+                                </p>
+
+
+                                <p class="mb-2">
+
+                                    <i class="fa-solid
+                                              fa-layer-group
+                                              text-primary"></i>
+
+                                    ${escapeHTML(
+                                        location.floor
+                                    )}
+
+                                </p>
+
+
+                                <p class="mb-2">
+
+                                    <i class="fa-solid
+                                              fa-graduation-cap
+                                              text-primary"></i>
+
+                                    ${escapeHTML(
+                                        location.department
+                                    )}
+
+                                </p>
+
+
+                                <hr>
+
+
+                                <p class="text-muted small mb-0">
+
+                                    ${escapeHTML(
+                                        location.description
+                                    )}
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            });
+
+        }
+
+
+        // ==========================================
+        // LIVE SEARCH
+        // ==========================================
+
+        document
+            .getElementById("searchLocation")
+            .addEventListener("input", displayLocations);
+
+
+        // ==========================================
+        // HTML ESCAPE
+        // ==========================================
+
+        function escapeHTML(value) {
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+        // ==========================================
+        // INITIAL DISPLAY
+        // ==========================================
+
+        displayLocations();
+
+    </script>
+
+</body>
+
+</html>

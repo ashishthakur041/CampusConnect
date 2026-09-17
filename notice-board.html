@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Notice Board - CampusConnect</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold" href="user/dashboard.html">
+            🎓 CampusConnect
+        </a>
+
+        <a href="user/dashboard.html" class="btn btn-light btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+
+    </div>
+</nav>
+
+
+<!-- Main Content -->
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+
+        <h2 class="fw-bold">
+            <i class="fa-solid fa-bullhorn text-primary"></i>
+            Campus Notice Board
+        </h2>
+
+        <p class="text-muted">
+            Stay updated with the latest campus announcements.
+        </p>
+
+    </div>
+
+
+    <!-- Notices -->
+    <div id="noticeContainer"></div>
+
+
+    <!-- No Notice Message -->
+    <div id="noNotice" class="text-center text-muted d-none">
+
+        <i class="fa-solid fa-bell-slash fa-3x mb-3"></i>
+
+        <h5>No notices available</h5>
+
+        <p>There are currently no campus announcements.</p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // Check login
+    const currentUser =
+        JSON.parse(localStorage.getItem("campusCurrentUser"));
+
+    if (!currentUser || currentUser.role !== "user") {
+        window.location.href = "login.html";
+    }
+
+
+    // Load notices
+    function loadNotices() {
+
+        let notices =
+            JSON.parse(localStorage.getItem("campusNotices")) || [];
+
+
+        // Demo notices if empty
+        if (notices.length === 0) {
+
+            notices = [
+
+                {
+                    id: 1,
+                    title: "Welcome to CampusConnect",
+                    message: "CampusConnect helps students report lost items, search campus locations and stay updated with important notices.",
+                    date: new Date().toISOString(),
+                    type: "General"
+                },
+
+                {
+                    id: 2,
+                    title: "Library Timings",
+                    message: "The central library is open from 8:00 AM to 6:00 PM on working days.",
+                    date: new Date().toISOString(),
+                    type: "Library"
+                },
+
+                {
+                    id: 3,
+                    title: "Important Student Notice",
+                    message: "Students are requested to keep their college ID cards with them while entering the campus.",
+                    date: new Date().toISOString(),
+                    type: "Important"
+                }
+
+            ];
+
+            localStorage.setItem(
+                "campusNotices",
+                JSON.stringify(notices)
+            );
+        }
+
+
+        displayNotices(notices);
+    }
+
+
+    // Display notices
+    function displayNotices(notices) {
+
+        const container =
+            document.getElementById("noticeContainer");
+
+        const noNotice =
+            document.getElementById("noNotice");
+
+
+        if (notices.length === 0) {
+
+            container.innerHTML = "";
+            noNotice.classList.remove("d-none");
+
+            return;
+        }
+
+
+        noNotice.classList.add("d-none");
+
+
+        notices.sort(
+            (a, b) =>
+                new Date(b.date) - new Date(a.date)
+        );
+
+
+        container.innerHTML = notices.map(notice => `
+
+            <div class="card border-0 shadow-sm mb-4">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start mb-3">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                <i class="fa-solid fa-bell text-primary"></i>
+                                ${escapeHTML(notice.title)}
+                            </h5>
+
+                            <small class="text-muted">
+                                ${formatDate(notice.date)}
+                            </small>
+
+                        </div>
+
+                        <span class="badge bg-primary">
+                            ${escapeHTML(notice.type)}
+                        </span>
+
+                    </div>
+
+
+                    <p class="mb-0 text-secondary">
+                        ${escapeHTML(notice.message)}
+                    </p>
+
+                </div>
+
+            </div>
+
+        `).join("");
+    }
+
+
+    // Escape HTML
+    function escapeHTML(text) {
+
+        const div = document.createElement("div");
+
+        div.textContent = text;
+
+        return div.innerHTML;
+    }
+
+
+    // Format date
+    function formatDate(date) {
+
+        return new Date(date).toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+    }
+
+
+    // Start
+    loadNotices();
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
